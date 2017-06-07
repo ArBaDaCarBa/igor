@@ -626,21 +626,21 @@ int Aligner::incorporate_in_dels(string& data_seq , string& genomic_seq , const 
 Int_Str nt2int(string nt_sequence){
 	Int_Str int_seq;
 	for(size_t i=0 ; i!= nt_sequence.size() ; ++i){
-		if(nt_sequence[i]=='A'){int_seq.append(0);}
-		else if(nt_sequence[i]=='C'){int_seq.append(1);}
-		else if(nt_sequence[i]=='G'){int_seq.append(2);}
-		else if(nt_sequence[i]=='T'){int_seq.append(3);}
-		else if(nt_sequence[i]=='R'){int_seq.append(4);}
-		else if(nt_sequence[i]=='Y'){int_seq.append(5);}
-		else if(nt_sequence[i]=='K'){int_seq.append(6);}
-		else if(nt_sequence[i]=='M'){int_seq.append(7);}
-		else if(nt_sequence[i]=='S'){int_seq.append(8);}
-		else if(nt_sequence[i]=='W'){int_seq.append(9);}
-		else if(nt_sequence[i]=='B'){int_seq.append(10);}
-		else if(nt_sequence[i]=='D'){int_seq.append(11);}
-		else if(nt_sequence[i]=='H'){int_seq.append(12);}
-		else if(nt_sequence[i]=='V'){int_seq.append(13);}
-		else if(nt_sequence[i]=='N'){int_seq.append(14);}
+		if(nt_sequence[i]=='A'){int_seq.append(int_A);}
+		else if(nt_sequence[i]=='C'){int_seq.append(int_C);}
+		else if(nt_sequence[i]=='G'){int_seq.append(int_G);}
+		else if((nt_sequence[i]=='T') or (nt_sequence[i]=='U')){int_seq.append(int_T);}
+		else if(nt_sequence[i]=='R'){int_seq.append(int_R);}
+		else if(nt_sequence[i]=='Y'){int_seq.append(int_Y);}
+		else if(nt_sequence[i]=='K'){int_seq.append(int_K);}
+		else if(nt_sequence[i]=='M'){int_seq.append(int_M);}
+		else if(nt_sequence[i]=='S'){int_seq.append(int_S);}
+		else if(nt_sequence[i]=='W'){int_seq.append(int_W);}
+		else if(nt_sequence[i]=='B'){int_seq.append(int_B);}
+		else if(nt_sequence[i]=='D'){int_seq.append(int_D);}
+		else if(nt_sequence[i]=='H'){int_seq.append(int_H);}
+		else if(nt_sequence[i]=='V'){int_seq.append(int_V);}
+		else if(nt_sequence[i]=='N'){int_seq.append(int_N);}
 		else{
 			cout<<"print:"<<nt_sequence<<endl;
 			cout<<i<<endl;
@@ -650,14 +650,172 @@ Int_Str nt2int(string nt_sequence){
 	return int_seq;
 }
 
-bool inline comp_nt_int(const char& char_1 , const char& char_2){
-	if(char_1 != char_2){
+/**
+ * This function compares nucleotides and output a boolean if they do not necessarily imply an error (ambiguous nucleotides are thus treated in a loose sense).
+ */
+bool inline comp_nt_int(const int& nt_1 , const int& nt_2){
+	if(nt_1 != nt_2){
+		if( (nt_1<4) & (nt_2<4)){
+			return false;
+		}
+		else{
+			switch(nt_1){
+					case int_A:
+						switch(nt_2){
+							case int_R: case int_W: case int_M: case int_D: case int_H: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_C:
+						switch(nt_2){
+							case int_Y: case int_S: case int_M: case int_B: case int_H: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_G:
+						switch(nt_2){
+							case int_R: case int_S: case int_K: case int_B: case int_D: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_T:
+						switch(nt_2){
+							case int_Y: case int_W: case int_K: case int_B: case int_D: case int_H: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_R:
+						switch(nt_2){
+							case int_A: case int_G:
+							case int_S: case int_W: case int_K: case int_M:
+							case int_B: case int_D: case int_H: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_Y:
+						switch(nt_2){
+							case int_C: case int_T:
+							case int_S: case int_W: case int_K: case int_M:
+							case int_B: case int_D: case int_H: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_K:
+						switch(nt_2){
+							case int_G: case int_T:
+							case int_R: case int_Y: case int_S: case int_W:
+							case int_B: case int_D: case int_H: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_M:
+						switch(nt_2){
+							case int_A: case int_C:
+							case int_R: case int_Y: case int_S: case int_W:
+							case int_B: case int_D: case int_H: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_S:
+						switch(nt_2){
+							case int_G: case int_C:
+							case int_R: case int_Y: case int_K: case int_M:
+							case int_B: case int_D: case int_H: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_W:
+						switch(nt_2){
+							case int_A: case int_T:
+							case int_R: case int_Y: case int_K: case int_M:
+							case int_B: case int_D: case int_H: case int_V: case int_N:
+								return true;
+								break;
+						}
+						break;
+					case int_B:
+						if(nt_2 != int_A){ //Of course this is in the hope that nt_2 is in the correct range of int
+							return true;
+						}
+						break;
+					case int_D:
+						if(nt_2 != int_C){ //Of course this is in the hope that nt_2 is in the correct range of int
+							return true;
+						}
+						break;
+					case int_H:
+						if(nt_2 != int_G){ //Of course this is in the hope that nt_2 is in the correct range of int
+							return true;
+						}
+						break;
+					case int_V:
+						if(nt_2 != int_T){ //Of course this is in the hope that nt_2 is in the correct range of int
+							return true;
+						}
+						break;
+					case int_N:
+						return true;
+						break;
+					default:
+						throw runtime_error("Unknown nucleotide index: "+to_string(nt_1) + "in comp_nt_int()");
 
+			}
+			return false;
+		}
 	}
 	else{
 		return true;
 	}
+}
 
+list<Int_nt> get_ambiguous_nt_list(const Int_nt& ambiguous_nt){
+	list<Int_nt> nt_list;
+
+	if ( (ambiguous_nt == int_A) or (ambiguous_nt == int_C) or  (ambiguous_nt ==int_G) or (ambiguous_nt == int_T)){
+		nt_list.emplace_back(ambiguous_nt);
+	}
+	else{
+		bool any_true=false;
+		//Add an A for all cases implying an A	(do not add a break to allow for execution of other cases and possibly add more letters to the list)
+		if((ambiguous_nt == int_R) or (ambiguous_nt == int_W) or (ambiguous_nt == int_M) or (ambiguous_nt == int_D)
+				or (ambiguous_nt == int_H) or (ambiguous_nt ==int_V) or (ambiguous_nt ==int_N)){
+			nt_list.emplace_back(int_A);
+			any_true=true;
+		}
+		//Same for C
+		if((ambiguous_nt == int_Y) or (ambiguous_nt == int_S) or (ambiguous_nt ==int_M) or (ambiguous_nt == int_B)
+				or (ambiguous_nt ==int_H) or (ambiguous_nt == int_V) or (ambiguous_nt ==int_N)){
+			nt_list.emplace_back(int_C);
+			any_true=true;
+		}
+		//Same for G
+		if((ambiguous_nt == int_R) or (ambiguous_nt ==int_S) or (ambiguous_nt ==int_K) or (ambiguous_nt ==int_B)
+				or (ambiguous_nt ==int_D) or (ambiguous_nt ==int_V) or (ambiguous_nt ==int_N)){
+			nt_list.emplace_back(int_G);
+			any_true=true;
+		}
+		//Same for T
+		if((ambiguous_nt == int_Y) or (ambiguous_nt ==int_W) or (ambiguous_nt ==int_K) or (ambiguous_nt ==int_B)
+				or (ambiguous_nt ==int_D) or (ambiguous_nt ==int_H) or (ambiguous_nt ==int_N)){
+			nt_list.emplace_back(int_T);
+			any_true=true;
+		}
+
+		if( not any_true){
+			throw runtime_error("Unknown nucleotide index: "+to_string(ambiguous_nt) + "in get_ambiguous_nt_list()");
+		}
+
+	}
+	return nt_list;
 }
 
 /*
@@ -1010,7 +1168,7 @@ list<pair<int,Alignment_data>> Aligner::sw_align(const Int_Str& int_data_sequenc
 									++dat_ind;
 								}
 								else{
-									if((gen_seq.at(gen_ind)!=dat_seq.at(dat_ind))){
+									if(not (comp_nt_int(gen_seq.at(gen_ind),dat_seq.at(dat_ind)))){
 										mismatches.emplace_back(dat_ind);
 									}
 									++dat_ind;

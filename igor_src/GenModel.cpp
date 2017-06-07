@@ -280,8 +280,17 @@ bool GenModel::infer_model(const vector<tuple<int,string,unordered_map<Gene_clas
 			}
 			cout<<"Initialization of proba bounds over"<<endl;
 
+			//Now let all the events in the need of it get their own updated copy of the marginals
+			init_single_thread_model_queue = single_thread_model_queue;
+			while(!init_single_thread_model_queue.empty()){
+				init_single_thread_model_queue.front()->update_event_internal_probas(single_thread_model_marginals.marginal_array_smart_p,index_map);
+				init_single_thread_model_queue.pop();
+			}
+
 			chrono::system_clock::time_point single_seq_begin;
 			chrono::duration<double> seq_time;
+
+
 
 
 			//Loop over sequences in parallel, using the number of threads declared previously when declaring the parallel section
@@ -403,7 +412,9 @@ bool GenModel::infer_model(const vector<tuple<int,string,unordered_map<Gene_clas
 
 	return 0;
 }
-
+/**
+ * \deprecated ?
+ */
 forward_list<pair<string,queue<queue<int>>>> GenModel::generate_sequences(int number_seq , bool generate_errors){
 
 	queue<shared_ptr<Rec_Event>> model_queue = this->model_parms.get_model_queue();
@@ -487,8 +498,15 @@ void GenModel::generate_sequences(int number_seq,bool generate_errors , string f
 	generation_infos_file<<"Generated with errors = "<<generate_errors<<endl;
 	generation_infos_file<<"Seed  = "<<time_seed<<endl;
 
+	//Update events internal probas (e.g for dinucleotide ambiguous nucleotides)
+	queue<shared_ptr<Rec_Event>> model_queue_copy = model_queue;
+	while(not model_queue_copy.empty()){
+		model_queue_copy.front()->update_event_internal_probas(this->model_marginals.marginal_array_smart_p , index_map);
+		model_queue_copy.pop();
+	}
+
 	for(size_t seq = 0 ; seq != number_seq ; ++seq){
-		pair<string,queue<queue<int>>> sequence = this->generate_unique_sequence(model_queue , index_map ,offset_map , generator);
+		pair<string,queue<queue<int>>> sequence = this->generate_unique_sequence(model_queue , index_map ,offset_map , generator,false);
 		if(generate_errors){
 			sequence.second.push(this->model_parms.get_err_rate_p()->generate_errors(sequence.first,generator));
 		}
@@ -532,7 +550,16 @@ void GenModel::generate_sequences(int number_seq,bool generate_errors , string f
 	return;
 }
 
-pair<string,queue<queue<int>>> GenModel::generate_unique_sequence(queue<shared_ptr<Rec_Event>> model_queue , unordered_map<Rec_Event_name,int> index_map , const unordered_map<Rec_Event_name,vector<pair<shared_ptr<const Rec_Event> , int>>>& offset_map , default_random_engine& generator ){
+pair<string,queue<queue<int>>> GenModel::generate_unique_sequence(queue<shared_ptr<Rec_Event>> model_queue , unordered_map<Rec_Event_name,int> index_map , const unordered_map<Rec_Event_name,vector<pair<shared_ptr<const Rec_Event> , int>>>& offset_map , default_random_engine& generator , bool update_event_internal_proba /*= true*/ ){
+	if(update_event_internal_proba){
+		queue<shared_ptr<Rec_Event>> model_queue_copy = model_queue;
+		while(not model_queue_copy.empty()){
+			model_queue_copy.front()->update_event_internal_probas(this->model_marginals.marginal_array_smart_p , index_map);
+			model_queue_copy.pop();
+		}
+	}
+
+
 	unordered_map<Seq_type,string>* constructed_sequences_p = new unordered_map<Seq_type,string>;
 	unordered_map<Seq_type,string> constructed_sequences = *constructed_sequences_p;
 	queue<queue<int>> realizations ;
